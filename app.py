@@ -5,19 +5,24 @@ import base64
 
 def main():
     st.set_page_config(page_title="CV Generator", page_icon="📄", layout="wide")
+
+    # Language Toggle at the top of the main page (No sidebar)
+    col_title, col_lang = st.columns([3, 1])
+
+    with col_lang:
+        lang_choice = st.radio(
+            "🌐 Language / Bahasa",
+            ["🇮🇩 Indonesia", "🇬🇧 English"],
+            horizontal=True,
+            key="lang_toggle"
+        )
     
-    # Language Selection in Sidebar
-    st.sidebar.header("🌐 Language Settings / Pengaturan Bahasa")
-    lang_choice = st.sidebar.radio(
-        "Pilih Bahasa UI / Select UI Language:",
-        ["Bahasa Indonesia", "English"],
-        index=0
-    )
-    lang_code = "id" if lang_choice == "Bahasa Indonesia" else "en"
+    lang_code = "id" if "Indonesia" in lang_choice else "en"
     t = TRANSLATIONS[lang_code]
 
-    st.title(t["app_title"])
-    st.write(t["app_subtitle"])
+    with col_title:
+        st.title(t["app_title"])
+        st.write(t["app_subtitle"])
 
     # Initialize session state for dynamic fields
     if 'edu_count' not in st.session_state:
