@@ -25,6 +25,7 @@ TRANSLATIONS = {
         "location": "Location (City, Country)",
         "linkedin": "LinkedIn URL",
         "github": "Portfolio/GitHub URL",
+        "toggle_portfolio": "Include Portfolio / GitHub link in CV",
         "summary": "Professional Summary",
         "summary_placeholder": "e.g., Dedicated software engineer with 3+ years of experience...",
         
@@ -60,6 +61,7 @@ TRANSLATIONS = {
         "skills_label": "Skills",
         "skills_placeholder": "e.g.:\n• Languages: PHP, JavaScript, Python\n• Frameworks: Laravel, React, Django",
         "achievements_header": "Achievements & Projects",
+        "toggle_projects_section": "Include Achievements & Projects section in CV",
         "achievement": "Achievement",
         "achieve_name": "Name",
         "achieve_desc": "Details",
@@ -97,6 +99,7 @@ TRANSLATIONS = {
         "location": "Lokasi (Kota, Negara)",
         "linkedin": "LinkedIn",
         "github": "Portfolio/GitHub",
+        "toggle_portfolio": "Sertakan tautan Portfolio / GitHub di CV",
         "summary": "Ringkasan Profil",
         "summary_placeholder": "Contoh: Software engineer berdedikasi dengan pengalaman 3+ tahun...",
         
@@ -132,6 +135,7 @@ TRANSLATIONS = {
         "skills_label": "Keahlian",
         "skills_placeholder": "Contoh:\n• Bahasa: PHP, JavaScript, Python\n• Framework: Laravel, React, Django",
         "achievements_header": "Prestasi & Proyek",
+        "toggle_projects_section": "Sertakan bagian Prestasi & Proyek pada CV",
         "achievement": "Prestasi",
         "achieve_name": "Nama",
         "achieve_desc": "Detail",

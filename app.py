@@ -52,7 +52,12 @@ def main():
         data['phone'] = col1.text_input(t["phone"], "")
         data['location'] = col2.text_input(t["location"], "")
         data['linkedin'] = st.text_input(t["linkedin"], "")
-        data['github'] = st.text_input(t["github"], "")
+        
+        include_github = st.checkbox(t["toggle_portfolio"], value=True)
+        if include_github:
+            data['github'] = st.text_input(t["github"], "")
+        else:
+            data['github'] = ""
         
         data['summary'] = st.text_area(t["summary"], "", height=150, placeholder=t["summary_placeholder"])
 
@@ -131,24 +136,26 @@ def main():
         data['skills'] = st.text_area(t["skills_label"], "", height=100, placeholder=t["skills_placeholder"])
         
         st.header(t["achievements_header"])
+        include_projects = st.checkbox(t["toggle_projects_section"], value=True)
         data['projects'] = []
         
-        for i in range(st.session_state['proj_count']):
-            st.subheader(f"{t['achievement']} {i+1}")
+        if include_projects:
+            for i in range(st.session_state['proj_count']):
+                st.subheader(f"{t['achievement']} {i+1}")
+                
+                proj_name = st.text_input(f"{t['achieve_name']}", key=f"proj_name_{i}")
+                proj_desc = st.text_area(f"{t['achieve_desc']}", key=f"proj_desc_{i}")
+                if proj_name: 
+                    data['projects'].append({'name': proj_name, 'description': proj_desc})
+                st.divider()
             
-            proj_name = st.text_input(f"{t['achieve_name']}", key=f"proj_name_{i}")
-            proj_desc = st.text_area(f"{t['achieve_desc']}", key=f"proj_desc_{i}")
-            if proj_name: 
-                data['projects'].append({'name': proj_name, 'description': proj_desc})
-            st.divider()
-        
-        c_add, c_del = st.columns(2)
-        if c_add.button(t["add_achieve"]):
-            st.session_state['proj_count'] += 1
-            st.rerun()
-        if c_del.button(t["del_achieve"], disabled=st.session_state['proj_count'] <= 0):
-            st.session_state['proj_count'] -= 1
-            st.rerun()
+            c_add, c_del = st.columns(2)
+            if c_add.button(t["add_achieve"]):
+                st.session_state['proj_count'] += 1
+                st.rerun()
+            if c_del.button(t["del_achieve"], disabled=st.session_state['proj_count'] <= 0):
+                st.session_state['proj_count'] -= 1
+                st.rerun()
 
     st.markdown("---")
     
