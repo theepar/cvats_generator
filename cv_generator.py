@@ -1,4 +1,5 @@
 from fpdf import FPDF
+from translations import CV_SECTION_HEADERS
 
 class PDF(FPDF):
     def header(self):
@@ -25,7 +26,7 @@ def clean_text(text):
     
     return text.encode('latin-1', 'replace').decode('latin-1')
 
-def generate_cv(data, font_choice="Times New Roman"):
+def generate_cv(data, font_choice="Times New Roman", lang="en"):
     pdf = PDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -36,6 +37,7 @@ def generate_cv(data, font_choice="Times New Roman"):
         "Courier": "Courier"
     }
     main_font = font_map.get(font_choice, "Times")
+    headers = CV_SECTION_HEADERS.get(lang, CV_SECTION_HEADERS["en"])
     
     pdf.set_font(main_font, 'B', 24)
     pdf.cell(0, 10, clean_text(data.get('name', 'Name')).upper(), 0, 1, 'C')
@@ -84,12 +86,12 @@ def generate_cv(data, font_choice="Times New Roman"):
         pdf.ln(2)
 
     if data.get('summary'):
-        add_section_header("Professional Summary")
+        add_section_header(headers["summary"])
         pdf.set_font(main_font, '', 11)
         pdf.multi_cell(0, 5, clean_text(data['summary']))
 
     if data.get('skills'):
-        add_section_header("Technical Skills")
+        add_section_header(headers["skills"])
         pdf.set_font(main_font, '', 11)
         skills_text = clean_text(data['skills'])
         pdf.multi_cell(0, 5, skills_text)
@@ -126,16 +128,16 @@ def generate_cv(data, font_choice="Times New Roman"):
             pdf.ln(3)
 
     if data.get('experience'):
-        add_section_header("Work Experience")
+        add_section_header(headers["experience"])
         render_block(data['experience'])
 
-    # --- Organizations (New) ---
+    # --- Organizations ---
     if data.get('organizations'):
-        add_section_header("Organizational Experience")
+        add_section_header(headers["organizations"])
         render_block(data['organizations'])
 
     if data.get('education'):
-        add_section_header("Education")
+        add_section_header(headers["education"])
         for edu in data['education']:
             y = pdf.get_y()
             pdf.set_font(main_font, '', 11)
@@ -151,7 +153,7 @@ def generate_cv(data, font_choice="Times New Roman"):
             pdf.ln(2)
     
     if data.get('projects'):
-        add_section_header("Achievements & Projects")
+        add_section_header(headers["projects"])
         for proj in data['projects']:
             pdf.set_font(main_font, 'B', 11)
             pdf.cell(0, 6, clean_text(proj['name']), 0, 1, 'L') 
@@ -161,5 +163,7 @@ def generate_cv(data, font_choice="Times New Roman"):
             if desc:
                 pdf.multi_cell(0, 5, clean_text(desc))
             pdf.ln(6)
+
+    return bytes(pdf.output(dest='S'))
 
     return bytes(pdf.output(dest='S'))

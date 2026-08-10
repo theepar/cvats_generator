@@ -6,6 +6,7 @@ Aplikasi web sederhana untuk membuat CV dalam format PDF yang ATS-friendly.
 
 - Buat CV dalam format PDF
 - Support berbagai section: Personal Info, Education, Work Experience, Organizations, Skills, dan Achievements
+- Fitur Multi-Bahasa (i18n): Pilihan bahasa UI dan bahasa output PDF (Bahasa Indonesia & English)
 - Pilihan font: Times New Roman, Arial, atau Courier
 - Tambah/hapus entry secara dinamis
 - Preview PDF langsung di browser
