@@ -6,9 +6,9 @@ Supports English (en) and Bahasa Indonesia (id)
 TRANSLATIONS = {
     "en": {
         # App Header
-        "app_title": "📄 ATS-Friendly CV Generator",
+        "app_title": "ATS-Friendly CV Generator",
         "app_subtitle": "Fill in your details below to create a clean, parsed PDF optimized for ATS.",
-        "lang_select": "🌐 Language / Bahasa",
+        "lang_select": "Language / Bahasa",
         
         # Tabs
         "tab_personal": "Personal Info",
@@ -35,8 +35,8 @@ TRANSLATIONS = {
         "school": "School/University",
         "degree": "Degree",
         "dates": "Dates",
-        "add_edu": "➕ Add Education",
-        "del_edu": "➖ Delete Education",
+        "add_edu": "Add Education",
+        "del_edu": "Delete Education",
         
         # Work Experience
         "work_header": "Work Experience",
@@ -44,8 +44,8 @@ TRANSLATIONS = {
         "job_title": "Job Title",
         "company": "Company",
         "work_desc": "Description / Achievements",
-        "add_work": "➕ Add Experience",
-        "del_work": "➖ Delete Experience",
+        "add_work": "Add Experience",
+        "del_work": "Delete Experience",
         
         # Organizations
         "org_header": "Organizations",
@@ -53,8 +53,8 @@ TRANSLATIONS = {
         "org_role": "Role/Position",
         "org_name": "Organization Name",
         "org_desc": "Description",
-        "add_org": "➕ Add Organization",
-        "del_org": "➖ Delete Organization",
+        "add_org": "Add Organization",
+        "del_org": "Delete Organization",
         
         # Skills & Achievements
         "skills_header": "Skills",
@@ -65,12 +65,12 @@ TRANSLATIONS = {
         "achievement": "Achievement",
         "achieve_name": "Name",
         "achieve_desc": "Details",
-        "add_achieve": "➕ Add Achievement",
-        "del_achieve": "➖ Delete Achievement",
+        "add_achieve": "Add Achievement",
+        "del_achieve": "Delete Achievement",
         
         # Settings & Actions
         "doc_settings": "Document Settings",
-        "font_tip": "💡 Tip: 'Times New Roman' is best for older ATS systems. 'Arial' is clean and modern.",
+        "font_tip": "Tip: 'Times New Roman' is best for older ATS systems. 'Arial' is clean and modern.",
         "select_font": "Select Font Style",
         "cv_lang_label": "PDF Output Language",
         "generate_btn": "Generate CV",
@@ -80,9 +80,9 @@ TRANSLATIONS = {
     },
     "id": {
         # App Header
-        "app_title": "📄 Pembuat CV ATS-Friendly",
+        "app_title": "Pembuat CV ATS-Friendly",
         "app_subtitle": "Isi data Anda di bawah ini untuk membuat CV PDF yang rapi dan optimal untuk sistem ATS.",
-        "lang_select": "🌐 Bahasa / Language",
+        "lang_select": "Bahasa / Language",
         
         # Tabs
         "tab_personal": "Info Pribadi",
@@ -109,8 +109,8 @@ TRANSLATIONS = {
         "school": "Sekolah/Universitas",
         "degree": "Gelar/Jurusan",
         "dates": "Tanggal/Periode",
-        "add_edu": "➕ Tambah Pendidikan",
-        "del_edu": "➖ Hapus Pendidikan",
+        "add_edu": "Tambah Pendidikan",
+        "del_edu": "Hapus Pendidikan",
         
         # Work Experience
         "work_header": "Pengalaman Kerja",
@@ -118,8 +118,8 @@ TRANSLATIONS = {
         "job_title": "Posisi/Jabatan",
         "company": "Perusahaan",
         "work_desc": "Deskripsi / Pencapaian",
-        "add_work": "➕ Tambah Pengalaman",
-        "del_work": "➖ Hapus Pengalaman",
+        "add_work": "Tambah Pengalaman",
+        "del_work": "Hapus Pengalaman",
         
         # Organizations
         "org_header": "Pengalaman Organisasi",
@@ -127,8 +127,8 @@ TRANSLATIONS = {
         "org_role": "Peran/Jabatan",
         "org_name": "Nama Organisasi",
         "org_desc": "Deskripsi Kegiatan",
-        "add_org": "➕ Tambah Organisasi",
-        "del_org": "➖ Hapus Organisasi",
+        "add_org": "Tambah Organisasi",
+        "del_org": "Hapus Organisasi",
         
         # Skills & Achievements
         "skills_header": "Keahlian",
@@ -139,12 +139,12 @@ TRANSLATIONS = {
         "achievement": "Prestasi",
         "achieve_name": "Nama",
         "achieve_desc": "Detail",
-        "add_achieve": "➕ Tambah Prestasi",
-        "del_achieve": "➖ Hapus Prestasi",
+        "add_achieve": "Tambah Prestasi",
+        "del_achieve": "Hapus Prestasi",
         
         # Settings & Actions
         "doc_settings": "Pengaturan Dokumen",
-        "font_tip": "💡 Petunjuk: 'Times New Roman' cocok untuk sistem ATS klasik. 'Arial' lebih modern.",
+        "font_tip": "Petunjuk: 'Times New Roman' cocok untuk sistem ATS klasik. 'Arial' lebih modern.",
         "select_font": "Pilih Font",
         "cv_lang_label": "Bahasa Output PDF",
         "generate_btn": "Buat CV",

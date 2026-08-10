@@ -4,24 +4,38 @@ from translations import TRANSLATIONS
 import base64
 
 def main():
-    st.set_page_config(page_title="CV Generator", page_icon="📄", layout="wide")
+    st.set_page_config(page_title="CV Generator", layout="wide")
 
-    # Language Toggle at the top of the main page (No sidebar)
+    # Language Toggle at top of main page (No flag emojis/tags)
     col_title, col_lang = st.columns([3, 1])
 
     with col_lang:
         lang_choice = st.radio(
-            "🌐 Language / Bahasa",
-            ["🇮🇩 Indonesia", "🇬🇧 English"],
+            "Language / Bahasa",
+            ["Indonesia", "English"],
             horizontal=True,
             key="lang_toggle"
         )
     
-    lang_code = "id" if "Indonesia" in lang_choice else "en"
+    lang_code = "id" if lang_choice == "Indonesia" else "en"
     t = TRANSLATIONS[lang_code]
 
     with col_title:
-        st.title(t["app_title"])
+        st.markdown(
+            f'''
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FF4B4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <h1 style="margin: 0; padding: 0; font-size: 2rem;">{t["app_title"]}</h1>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
         st.write(t["app_subtitle"])
 
     # Initialize session state for dynamic fields
@@ -47,19 +61,19 @@ def main():
     with tab1:
         st.header(t["personal_header"])
         col1, col2 = st.columns(2)
-        data['name'] = col1.text_input(t["full_name"], "")
-        data['email'] = col2.text_input(t["email"], "")
-        data['phone'] = col1.text_input(t["phone"], "")
-        data['location'] = col2.text_input(t["location"], "")
-        data['linkedin'] = st.text_input(t["linkedin"], "")
+        data['name'] = col1.text_input(t["full_name"], key="input_name")
+        data['email'] = col2.text_input(t["email"], key="input_email")
+        data['phone'] = col1.text_input(t["phone"], key="input_phone")
+        data['location'] = col2.text_input(t["location"], key="input_location")
+        data['linkedin'] = st.text_input(t["linkedin"], key="input_linkedin")
         
-        include_github = st.checkbox(t.get("toggle_portfolio", "Sertakan Portfolio / GitHub"), value=True)
+        include_github = st.checkbox(t.get("toggle_portfolio", "Sertakan Portfolio / GitHub"), value=True, key="input_toggle_github")
         if include_github:
-            data['github'] = st.text_input(t["github"], "")
+            data['github'] = st.text_input(t["github"], key="input_github")
         else:
             data['github'] = ""
         
-        data['summary'] = st.text_area(t["summary"], "", height=150, placeholder=t["summary_placeholder"])
+        data['summary'] = st.text_area(t["summary"], height=150, placeholder=t["summary_placeholder"], key="input_summary")
 
     with tab2:
         st.header(t["edu_header"])
@@ -76,10 +90,10 @@ def main():
             st.divider()
         
         c_add, c_del = st.columns(2)
-        if c_add.button(t["add_edu"]):
+        if c_add.button(t["add_edu"], icon=":material/add:"):
             st.session_state['edu_count'] += 1
             st.rerun()
-        if c_del.button(t["del_edu"], disabled=st.session_state['edu_count'] <= 0):
+        if c_del.button(t["del_edu"], icon=":material/remove:", disabled=st.session_state['edu_count'] <= 0):
             st.session_state['edu_count'] -= 1
             st.rerun()
 
@@ -100,10 +114,10 @@ def main():
             st.divider()
             
         c_add, c_del = st.columns(2)
-        if c_add.button(t["add_work"]):
+        if c_add.button(t["add_work"], icon=":material/add:"):
             st.session_state['work_count'] += 1
             st.rerun()
-        if c_del.button(t["del_work"], disabled=st.session_state['work_count'] <= 0):
+        if c_del.button(t["del_work"], icon=":material/remove:", disabled=st.session_state['work_count'] <= 0):
             st.session_state['work_count'] -= 1
             st.rerun()
 
@@ -124,19 +138,19 @@ def main():
             st.divider()
             
         c_add, c_del = st.columns(2)
-        if c_add.button(t["add_org"]):
+        if c_add.button(t["add_org"], icon=":material/add:"):
             st.session_state['org_count'] += 1
             st.rerun()
-        if c_del.button(t["del_org"], disabled=st.session_state['org_count'] <= 0):
+        if c_del.button(t["del_org"], icon=":material/remove:", disabled=st.session_state['org_count'] <= 0):
             st.session_state['org_count'] -= 1
             st.rerun()
 
     with tab5:
         st.header(t["skills_header"])
-        data['skills'] = st.text_area(t["skills_label"], "", height=100, placeholder=t["skills_placeholder"])
+        data['skills'] = st.text_area(t["skills_label"], height=100, placeholder=t["skills_placeholder"], key="input_skills")
         
         st.header(t["achievements_header"])
-        include_projects = st.checkbox(t.get("toggle_projects_section", "Sertakan bagian Prestasi & Proyek pada CV"), value=True)
+        include_projects = st.checkbox(t.get("toggle_projects_section", "Sertakan bagian Prestasi & Proyek pada CV"), value=True, key="input_toggle_projects")
         data['projects'] = []
         
         if include_projects:
@@ -150,10 +164,10 @@ def main():
                 st.divider()
             
             c_add, c_del = st.columns(2)
-            if c_add.button(t["add_achieve"]):
+            if c_add.button(t["add_achieve"], icon=":material/add:"):
                 st.session_state['proj_count'] += 1
                 st.rerun()
-            if c_del.button(t["del_achieve"], disabled=st.session_state['proj_count'] <= 0):
+            if c_del.button(t["del_achieve"], icon=":material/remove:", disabled=st.session_state['proj_count'] <= 0):
                 st.session_state['proj_count'] -= 1
                 st.rerun()
 
@@ -161,18 +175,31 @@ def main():
     
     # Document & Output Settings
     st.subheader(t["doc_settings"])
-    st.info(t["font_tip"])
+    st.markdown(
+        f'''
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background-color: rgba(255,255,255,0.05); border-left: 4px solid #FF4B4B; border-radius: 4px; margin-bottom: 16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4B4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="9" y1="18" x2="15" y2="18"></line>
+                <line x1="10" y1="22" x2="14" y2="22"></line>
+                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.55.64 2.8 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path>
+            </svg>
+            <span>{t["font_tip"]}</span>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
     
     col_set1, col_set2 = st.columns(2)
-    font_choice = col_set1.selectbox(t["select_font"], ["Times New Roman", "Arial", "Courier"])
+    font_choice = col_set1.selectbox(t["select_font"], ["Times New Roman", "Arial", "Courier"], key="font_choice")
     cv_lang_choice = col_set2.selectbox(
         t["cv_lang_label"],
         ["Bahasa Indonesia", "English"],
-        index=0 if lang_code == "id" else 1
+        index=0 if lang_code == "id" else 1,
+        key="cv_lang_choice"
     )
     cv_lang_code = "id" if cv_lang_choice == "Bahasa Indonesia" else "en"
     
-    submitted = st.button(t["generate_btn"], type="primary", use_container_width=True)
+    submitted = st.button(t["generate_btn"], type="primary", use_container_width=True, icon=":material/description:")
 
     if submitted:
         if not data['name']:
@@ -191,7 +218,8 @@ def main():
                 label=t["download_btn"],
                 data=pdf_bytes,
                 file_name=f"{data['name']}_CV.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
+                icon=":material/download:"
             )
 
 if __name__ == "__main__":
