@@ -53,7 +53,7 @@ def main():
         data['location'] = col2.text_input(t["location"], "")
         data['linkedin'] = st.text_input(t["linkedin"], "")
         
-        include_github = st.checkbox(t["toggle_portfolio"], value=True)
+        include_github = st.checkbox(t.get("toggle_portfolio", "Sertakan Portfolio / GitHub"), value=True)
         if include_github:
             data['github'] = st.text_input(t["github"], "")
         else:
@@ -136,7 +136,7 @@ def main():
         data['skills'] = st.text_area(t["skills_label"], "", height=100, placeholder=t["skills_placeholder"])
         
         st.header(t["achievements_header"])
-        include_projects = st.checkbox(t["toggle_projects_section"], value=True)
+        include_projects = st.checkbox(t.get("toggle_projects_section", "Sertakan bagian Prestasi & Proyek pada CV"), value=True)
         data['projects'] = []
         
         if include_projects:
