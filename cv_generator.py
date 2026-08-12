@@ -1,3 +1,4 @@
+import html
 from fpdf import FPDF
 from translations import CV_SECTION_HEADERS
 
@@ -52,11 +53,12 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
         return url
 
     parts = []
-    if data.get('location'): parts.append(clean_text(data['location']))
-    if data.get('phone'): parts.append(clean_text(data['phone']))
+    if data.get('location'): parts.append(html.escape(clean_text(data['location'])))
+    if data.get('phone'): parts.append(html.escape(clean_text(data['phone'])))
     if data.get('email'): 
         email = clean_text(data['email'])
-        parts.append(f'<a href="mailto:{email}">{email}</a>')
+        safe_email = html.escape(email)
+        parts.append(f'<a href="mailto:{safe_email}">{safe_email}</a>')
     
     if parts:
         html_contact = " | ".join(parts)
@@ -66,11 +68,11 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
     if data.get('linkedin'): 
         lbl = clean_text(data['linkedin'])
         url = prep_url(lbl)
-        links.append(f'<a href="{url}">{lbl}</a>')
+        links.append(f'<a href="{html.escape(url)}">{html.escape(lbl)}</a>')
     if data.get('github'): 
         lbl = clean_text(data['github'])
         url = prep_url(lbl)
-        links.append(f'<a href="{url}">{lbl}</a>')
+        links.append(f'<a href="{html.escape(url)}">{html.escape(lbl)}</a>')
     
     if links:
         html_links = " | ".join(links)
@@ -163,7 +165,5 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
             if desc:
                 pdf.multi_cell(0, 5, clean_text(desc))
             pdf.ln(6)
-
-    return bytes(pdf.output(dest='S'))
 
     return bytes(pdf.output(dest='S'))
