@@ -5,19 +5,17 @@ Supports English (en) and Bahasa Indonesia (id)
 
 TRANSLATIONS = {
     "en": {
-        # App Header
         "app_title": "ATS-Friendly CV Generator",
         "app_subtitle": "Fill in your details below to create a clean, parsed PDF optimized for ATS.",
         "lang_select": "Language / Bahasa",
         
-        # Tabs
         "tab_personal": "Personal Info",
         "tab_education": "Education",
         "tab_experience": "Experience",
         "tab_organizations": "Organizations",
         "tab_skills_projects": "Skills & Projects",
+        "tab_ats_check": "ATS Audit & Matcher",
         
-        # Personal Info
         "personal_header": "Personal Information",
         "full_name": "Full Name",
         "email": "Email",
@@ -27,9 +25,8 @@ TRANSLATIONS = {
         "github": "Portfolio/GitHub URL",
         "toggle_portfolio": "Include Portfolio / GitHub link in CV",
         "summary": "Professional Summary",
-        "summary_placeholder": "e.g., Dedicated software engineer with 3+ years of experience...",
+        "summary_placeholder": "e.g., Dedicated professional with 4+ years of experience delivering high-impact results and driving organizational growth...",
         
-        # Education
         "edu_header": "Education",
         "edu_title": "Education",
         "school": "School/University",
@@ -38,7 +35,6 @@ TRANSLATIONS = {
         "add_edu": "Add Education",
         "del_edu": "Delete Education",
         
-        # Work Experience
         "work_header": "Work Experience",
         "role": "Role",
         "job_title": "Job Title",
@@ -47,7 +43,6 @@ TRANSLATIONS = {
         "add_work": "Add Experience",
         "del_work": "Delete Experience",
         
-        # Organizations
         "org_header": "Organizations",
         "org_item": "Organization",
         "org_role": "Role/Position",
@@ -56,7 +51,6 @@ TRANSLATIONS = {
         "add_org": "Add Organization",
         "del_org": "Delete Organization",
         
-        # Skills & Achievements
         "skills_header": "Skills",
         "skills_label": "Skills",
         "skills_placeholder": "e.g.:\n• Languages: PHP, JavaScript, Python\n• Frameworks: Laravel, React, Django",
@@ -68,30 +62,45 @@ TRANSLATIONS = {
         "add_achieve": "Add Achievement",
         "del_achieve": "Delete Achievement",
         
-        # Settings & Actions
         "doc_settings": "Document Settings",
         "font_tip": "Tip: 'Times New Roman' is best for older ATS systems. 'Arial' is clean and modern.",
         "select_font": "Select Font Style",
         "cv_lang_label": "PDF Output Language",
+        "section_order_label": "Section Layout Order",
+        "order_standard": "Standard (Experience first — for Professionals)",
+        "order_academic": "Academic / Fresh Graduate (Education first)",
         "generate_btn": "Generate CV",
         "name_required": "Please fill in at least your name.",
         "success_msg": "CV Generated Successfully!",
         "download_btn": "Download PDF",
+        "download_md_btn": "Download Markdown (.md)",
+        "download_json_btn": "Download JSON (.json)",
+        
+        "ats_header": "ATS Compatibility & Job Description Matcher",
+        "ats_desc": "Audit your CV against ATS algorithms and target job descriptions to identify missing keywords.",
+        "job_desc_label": "Paste Target Job Description (Optional)",
+        "job_desc_placeholder": "Paste the job vacancy requirements/responsibilities here to analyze keyword matching...",
+        "audit_btn": "Run ATS Audit",
+        "score_label": "ATS Overall Score",
+        "match_rate_label": "Job Keyword Match",
+        "metrics_label": "Quantifiable Metrics Found",
+        "verbs_label": "Action Verbs Found",
+        "matched_kw_title": "Matched Keywords",
+        "missing_kw_title": "Missing Recommended Keywords",
+        "recommendations_title": "ATS Recommendations",
     },
     "id": {
-        # App Header
         "app_title": "Pembuat CV ATS-Friendly",
         "app_subtitle": "Isi data Anda di bawah ini untuk membuat CV PDF yang rapi dan optimal untuk sistem ATS.",
         "lang_select": "Bahasa / Language",
         
-        # Tabs
         "tab_personal": "Info Pribadi",
         "tab_education": "Pendidikan",
         "tab_experience": "Pengalaman Kerja",
         "tab_organizations": "Organisasi",
         "tab_skills_projects": "Keahlian & Prestasi",
+        "tab_ats_check": "Audit Skor ATS",
         
-        # Personal Info
         "personal_header": "Informasi Pribadi",
         "full_name": "Nama Lengkap",
         "email": "Email",
@@ -101,9 +110,8 @@ TRANSLATIONS = {
         "github": "Portfolio/GitHub",
         "toggle_portfolio": "Sertakan tautan Portfolio / GitHub di CV",
         "summary": "Ringkasan Profil",
-        "summary_placeholder": "Contoh: Software engineer berdedikasi dengan pengalaman 3+ tahun...",
+        "summary_placeholder": "Contoh: Profesional berdedikasi dengan pengalaman 4+ tahun dalam meningkatkan kinerja, efisiensi operasional, dan kepuasan pemangku kepentingan...",
         
-        # Education
         "edu_header": "Pendidikan",
         "edu_title": "Pendidikan",
         "school": "Sekolah/Universitas",
@@ -112,7 +120,6 @@ TRANSLATIONS = {
         "add_edu": "Tambah Pendidikan",
         "del_edu": "Hapus Pendidikan",
         
-        # Work Experience
         "work_header": "Pengalaman Kerja",
         "role": "Peran",
         "job_title": "Posisi/Jabatan",
@@ -121,7 +128,6 @@ TRANSLATIONS = {
         "add_work": "Tambah Pengalaman",
         "del_work": "Hapus Pengalaman",
         
-        # Organizations
         "org_header": "Pengalaman Organisasi",
         "org_item": "Organisasi",
         "org_role": "Peran/Jabatan",
@@ -130,7 +136,6 @@ TRANSLATIONS = {
         "add_org": "Tambah Organisasi",
         "del_org": "Hapus Organisasi",
         
-        # Skills & Achievements
         "skills_header": "Keahlian",
         "skills_label": "Keahlian",
         "skills_placeholder": "Contoh:\n• Bahasa: PHP, JavaScript, Python\n• Framework: Laravel, React, Django",
@@ -142,15 +147,32 @@ TRANSLATIONS = {
         "add_achieve": "Tambah Prestasi",
         "del_achieve": "Hapus Prestasi",
         
-        # Settings & Actions
         "doc_settings": "Pengaturan Dokumen",
         "font_tip": "Petunjuk: 'Times New Roman' cocok untuk sistem ATS klasik. 'Arial' lebih modern.",
         "select_font": "Pilih Font",
         "cv_lang_label": "Bahasa Output PDF",
+        "section_order_label": "Urutan Tata Letak Bagian",
+        "order_standard": "Standar (Pengalaman Kerja di atas — untuk Profesional)",
+        "order_academic": "Akademik / Fresh Graduate (Pendidikan di atas)",
         "generate_btn": "Buat CV",
         "name_required": "Mohon isi nama Anda terlebih dahulu.",
         "success_msg": "CV berhasil dibuat!",
         "download_btn": "Download PDF",
+        "download_md_btn": "Download Markdown (.md)",
+        "download_json_btn": "Download JSON (.json)",
+        
+        "ats_header": "Audit Kompatibilitas ATS & Kecocokan Lowongan",
+        "ats_desc": "Uji kesiapan CV Anda terhadap algoritma ATS dan lowongan target untuk menemukan kata kunci penting.",
+        "job_desc_label": "Tempel Deskripsi Lowongan Kerja (Opsional)",
+        "job_desc_placeholder": "Tempel deskripsi/persyaratan lowongan yang ingin dilamar di sini untuk mencocokkan kata kunci...",
+        "audit_btn": "Jalankan Audit ATS",
+        "score_label": "Skor Kelayakan ATS",
+        "match_rate_label": "Kecocokan Kata Kunci",
+        "metrics_label": "Metrik / Angka Terukur",
+        "verbs_label": "Action Verbs Ditemukan",
+        "matched_kw_title": "Kata Kunci yang Cocok",
+        "missing_kw_title": "Kata Kunci yang Disarankan Ditambah",
+        "recommendations_title": "Saran Perbaikan ATS",
     }
 }
 
