@@ -223,37 +223,37 @@ def main():
             if include_projects:
                 for i in range(st.session_state['proj_count']):
                     with st.container(border=True):
-                        st.subheader(f"{t['item']} {i+1}")
-                        name = st.text_input(f"{t['item_name']}", key=f"proj_name_{i}")
-                        desc = st.text_area(f"{t['item_desc']}", height=90, key=f"proj_desc_{i}")
+                        st.subheader(f"{t.get('item', t.get('achievement', 'Prestasi / Proyek'))} {i+1}")
+                        name = st.text_input(f"{t.get('item_name', t.get('achieve_name', 'Nama'))}", key=f"proj_name_{i}")
+                        desc = st.text_area(f"{t.get('item_desc', t.get('achieve_desc', 'Detail'))}", height=90, key=f"proj_desc_{i}")
                         
                         if name:
                             data['projects'].append({'name': name, 'description': desc})
                 
                 c_add, c_del = st.columns(2)
-                if c_add.button(t["add_proj"], icon=":material/add:", use_container_width=True):
+                if c_add.button(t.get("add_proj", t.get("add_achieve", "Tambah Prestasi")), icon=":material/add:", use_container_width=True):
                     st.session_state['proj_count'] += 1
                     st.rerun()
-                if c_del.button(t["del_proj"], icon=":material/remove:", disabled=st.session_state['proj_count'] <= 0, use_container_width=True):
+                if c_del.button(t.get("del_proj", t.get("del_achieve", "Hapus Prestasi")), icon=":material/remove:", disabled=st.session_state['proj_count'] <= 0, use_container_width=True):
                     st.session_state['proj_count'] -= 1
                     st.rerun()
 
     with tab6:
         with st.container(border=True):
-            st.header(t["ats_check_header"])
-            st.write(t["ats_check_desc"])
+            st.header(t.get("ats_check_header", t.get("ats_header", "Audit Kompatibilitas ATS")))
+            st.write(t.get("ats_check_desc", t.get("ats_desc", "")))
             
             job_desc_input = st.text_area(
-                t["job_desc_label"],
+                t.get("job_desc_label", "Tempel Deskripsi Lowongan Kerja (Opsional)"),
                 height=150,
-                placeholder=t["job_desc_placeholder"],
+                placeholder=t.get("job_desc_placeholder", ""),
                 key="input_job_desc"
             )
 
             audit_result = analyze_ats(data, job_desc_input)
 
             c_sc1, c_sc2, c_sc3, c_sc4 = st.columns(4)
-            c_sc1.metric(t["overall_score_label"], f"{audit_result.score}/100")
+            c_sc1.metric(t.get("overall_score_label", t.get("score_label", "Skor ATS")), f"{audit_result.score}/100")
             if job_desc_input.strip():
                 c_sc2.metric(t["match_rate_label"], f"{audit_result.keyword_match_rate:.0%}")
             else:
