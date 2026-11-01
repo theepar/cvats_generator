@@ -1,5 +1,39 @@
 import re
 
+DATE_PATTERN = re.compile(
+    r"\b(?:19|20)\d{2}\b|\b(?:present|current|sekarang|hingga kini|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\b",
+    re.I
+)
+INLINE_DATE_RE = re.compile(
+    r"(?:[ \t]{2,}|\s*\|\s*|\s*,\s*)(?:(?:expected|graduated|est\.?|sejak|lulus|periode|tahun)?\s*"
+    r"(?:(?:19|20)\d{2}|present|sekarang|current|hingga kini|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)"
+    r"[^\n]*)$",
+    re.I
+)
+DEGREE_KEYWORDS = re.compile(
+    r"\b(?:bachelor|master|doctor|phd|diploma|associate|sarjana|magister|doktor|s1|s2|s3|d3|d4|b\.?s\.?|b\.?a\.?|b\.?eng\.?|m\.?s\.?|m\.?a\.?|m\.?b\.?a\.?|rekayasa|teknik|engineering|computer science|informatika|sistem informasi)\b",
+    re.I
+)
+SCHOOL_KEYWORDS = re.compile(
+    r"\b(?:university|universitas|institute|institut|college|school|sekolah|politeknik|polytechnic|academy|akademi|smk|sma)\b",
+    re.I
+)
+
+def extract_inline_date(line):
+    m = INLINE_DATE_RE.search(line)
+    if m:
+        text = line[:m.start()].strip()
+        date = line[m.start():].strip().lstrip('|, \t')
+        return text, date
+    return line.strip(), None
+
+def is_entry_header(line):
+    s = line.strip()
+    if not s or s.startswith(("-", "*", "•")) or s.startswith(("[", "{", "(")):
+        return False
+    return bool(INLINE_DATE_RE.search(s))
+
+
 SECTION_NAMES = {
     "personal": {
         "personal", "personal info", "personal information", "profile", "contact",
@@ -145,29 +179,75 @@ def parse_entry(lines, section):
         elif first_line is None:
             first_line = strip_format(line)
         else:
-            details.append(strip_format(line))
+            cleaned = strip_format(line)
+            if cleaned:
+                details.append(cleaned)
 
     if first_line:
-        parts = [part.strip() for part in first_line.split("|")]
-        keys = {
-            "education": ["school", "degree", "dates"],
-            "experience": ["title", "company", "dates"],
-            "organizations": ["title", "company", "dates"],
-            "projects": ["name", "dates"],
-        }[section]
-        for key, value in zip(keys, parts):
-            entry.setdefault(key, value)
+        clean_first, inline_date = extract_inline_date(first_line)
+        if inline_date and not entry.get("dates"):
+            entry["dates"] = inline_date
+
+        if "|" in clean_first:
+            parts = [part.strip() for part in clean_first.split("|")]
+            keys = {
+                "education": ["school", "degree", "dates"],
+                "experience": ["title", "company", "dates"],
+                "organizations": ["title", "company", "dates"],
+                "projects": ["name", "dates"],
+            }[section]
+            for key, value in zip(keys, parts):
+                entry.setdefault(key, value)
+        else:
+            if section == "projects":
+                entry.setdefault("name", clean_first)
+            elif section == "education":
+                is_deg = bool(DEGREE_KEYWORDS.search(clean_first))
+                is_sch = bool(SCHOOL_KEYWORDS.search(clean_first))
+                if is_deg and not is_sch:
+                    entry.setdefault("degree", clean_first)
+                    if details and not details[0].startswith(("-", "*", "•")) and not DATE_PATTERN.search(details[0]):
+                        entry.setdefault("school", details.pop(0))
+                    else:
+                        entry.setdefault("school", "")
+                else:
+                    entry.setdefault("school", clean_first)
+                    if details and not details[0].startswith(("-", "*", "•")) and not DATE_PATTERN.search(details[0]):
+                        entry.setdefault("degree", details.pop(0))
+            else:
+                match = re.split(r"\s+(?:at|@|di)\s+", clean_first, maxsplit=1, flags=re.I)
+                entry.setdefault("title", match[0])
+                if len(match) > 1:
+                    entry.setdefault("company", match[1])
+                elif details and not details[0].startswith(("-", "*", "•")):
+                    next_line = details[0]
+                    if "|" in next_line:
+                        comp, rest = next_line.split("|", 1)
+                        entry.setdefault("company", comp.strip())
+                        details[0] = rest.strip()
+                    elif not DATE_PATTERN.search(next_line):
+                        entry.setdefault("company", details.pop(0))
 
     if details:
-        description = "\n".join(details)
-        if entry.get("description"):
-            description = entry["description"] + "\n" + description
-        entry["description"] = description
+        remaining = []
+        for line in details:
+            if DATE_PATTERN.search(line) and len(line) < 55 and not entry.get("dates") and not line.startswith(("-", "*", "•")):
+                entry["dates"] = line
+            else:
+                remaining.append(line)
+        if remaining:
+            description = "\n".join(remaining)
+            if entry.get("description"):
+                description = entry["description"] + "\n" + description
+            entry["description"] = description
 
-    required = "school" if section == "education" else "name" if section == "projects" else "title"
-    if not entry.get(required):
-        return None
-    return entry
+    if section == "education":
+        is_valid = bool(entry.get("school") or entry.get("degree"))
+    elif section == "projects":
+        is_valid = bool(entry.get("name"))
+    else:
+        is_valid = bool(entry.get("title"))
+    return entry if is_valid else None
 
 
 def parse_cv_text(text):

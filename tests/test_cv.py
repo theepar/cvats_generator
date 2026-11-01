@@ -114,3 +114,106 @@ def test_parse_free_text_ai():
     assert len(parsed["experience"]) >= 1
     assert len(parsed["education"]) >= 1
     assert "Docker" in parsed["skills"]
+
+def test_user_cv_parsing_from_screenshots():
+    raw_text = """
+    Ahmad Pratama
+    ahmad@example.com | 081234567890 | https://linkedin.com/in/ahmadpratama
+
+    Ringkasan Profil
+    Software engineering student and passionate mobile developer.
+
+    Pendidikan
+    Bachelor of Software Engineering (S1)       Expected 2027
+    Telkom University
+
+    Pengalaman Kerja
+    Frontend & Mobile Developer        Jun 2025 - Present
+    PT Inovasi Digital | Flutter, React Native, TypeScript
+    - Membangun fitur core aplikasi mobile
+
+    Mobile Developer - Hackathon Project (Tim AgriPlay)        2025
+    AgriPlay (AgriPlay) | React Native, Expo, Expo Router, TypeScript, AsyncStorage
+    • Membangun aplikasi mobile Agrarian secara mandiri (solo development) menggunakan React Native dan Expo untuk kompetisi hackathon bersama tim.
+    • Mengembangkan seluruh UI/UX dan fungsionalitas aplikasi, termasuk home dashboard, AI chatbot, sistem rekomendasi
+
+    Pengalaman Organisasi
+    Full Stack Developer        Jan 2026 - Present
+    Gibei Telkom University | Next.js, Next Auth, Torus, Drizzle ORM
+    • Merancang dan membangun LMS dan landing page GIBEI Investment dari nol, termasuk fitur kuis interaktif, generate sertifikat otomatis, dan autentikasi aman.
+    Cyber Security Member        Nov 2025 - Present
+    Telkom University Cyber Club | Linux, Wireshark, Metasploit
+    • Melakukan analisis kerentanan sistem jaringan laboratorium kampus.
+
+    Prestasi & Proyek
+    3rd Place Winner - Digital App Challenge #1       Aug 2025
+    • Mengembangkan "VISIONARY", sistem monitoring keamanan berbasis deteksi real-time menggunakan Python dan model AI pre-trained untuk mengidentifikasi senjata dan ancaman keamanan.
+    • Tech Stack: Python, Computer Vision, AI Model.
+    """
+    parsed = parse_free_text(raw_text)
+
+    # 1. Personal
+    assert parsed["name"] == "Ahmad Pratama"
+    assert parsed["email"] == "ahmad@example.com"
+    assert parsed["phone"] == "081234567890"
+    assert "linkedin.com/in/ahmadpratama" in parsed["linkedin"]
+
+    # 2. Education
+    assert len(parsed["education"]) >= 1
+    edu = parsed["education"][0]
+    assert edu["degree"] == "Bachelor of Software Engineering (S1)"
+    assert edu["dates"] == "Expected 2027"
+    assert "Telkom University" in edu["school"]
+
+    # 3. Experience
+    assert len(parsed["experience"]) >= 2
+    exp1 = parsed["experience"][0]
+    assert "Frontend & Mobile Developer" in exp1["title"]
+    assert exp1["dates"] == "Jun 2025 - Present"
+    assert "PT Inovasi Digital" in exp1["company"]
+
+    exp2 = parsed["experience"][1]
+    assert "Mobile Developer" in exp2["title"]
+    assert exp2["dates"] == "2025"
+    assert "AgriPlay" in exp2["company"]
+    assert "solo development" in exp2["description"]
+
+    # 4. Organizations
+    assert len(parsed["organizations"]) >= 2
+    org1 = parsed["organizations"][0]
+    assert "Full Stack Developer" in org1["title"]
+    assert org1["dates"] == "Jan 2026 - Present"
+    assert "Gibei Telkom University" in org1["company"]
+
+    org2 = parsed["organizations"][1]
+    assert "Cyber Security Member" in org2["title"]
+    assert org2["dates"] == "Nov 2025 - Present"
+    assert "Telkom University Cyber Club" in org2["company"]
+
+    # 5. Projects
+    assert len(parsed["projects"]) >= 1
+    proj = parsed["projects"][0]
+    assert "3rd Place Winner - Digital App Challenge #1" in proj["name"]
+    assert proj["dates"] == "Aug 2025"
+    assert "VISIONARY" in proj["description"]
+
+def test_single_line_education_parsing():
+    raw_text = """
+    Budi Setiawan
+    budi@example.com | 081234567890
+
+    Pendidikan
+    Bachelor of Software Engineering (S1)       Expected 2027
+
+    Pengalaman Kerja
+    Software Engineer        2024 - Present
+    Tech Corp
+    - Developing core backend services
+    """
+    parsed = parse_free_text(raw_text)
+    assert len(parsed["education"]) == 1
+    edu = parsed["education"][0]
+    assert edu["degree"] == "Bachelor of Software Engineering (S1)"
+    assert edu["dates"] == "Expected 2027"
+
+

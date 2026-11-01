@@ -25,7 +25,7 @@ ENTRY_FIELDS = {
     "education": ("edu_count", {"school": "school", "degree": "degree", "dates": "edu_dates"}),
     "experience": ("work_count", {"title": "job", "company": "company", "dates": "job_dates", "description": "job_desc"}),
     "organizations": ("org_count", {"title": "org_role", "company": "org_name", "dates": "org_dates", "description": "org_desc"}),
-    "projects": ("proj_count", {"name": "proj_name", "description": "proj_desc"}),
+    "projects": ("proj_count", {"name": "proj_name", "dates": "proj_dates", "description": "proj_desc"}),
 }
 
 LABELS = {

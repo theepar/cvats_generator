@@ -15,15 +15,47 @@ def main():
     st.markdown(
         """
         <style>
+        /* Ensure smooth full page scrolling without height cutoffs */
+        html, body {
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100% !important;
+        }
+
+        [data-testid="stAppViewContainer"] {
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100vh !important;
+        }
+
+        section[data-testid="stMain"], .main {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        /* Prevent flexbox container trapping */
+        div[data-testid="stVerticalBlock"] {
+            min-height: 0 !important;
+        }
+
+        .stTabs [data-baseweb="tab-panel"] {
+            overflow: visible !important;
+        }
+
         /* Responsive container: centers and limits max-width for ultra-wide / desktop */
         .main .block-container {
             max-width: 1000px !important;
             margin-left: auto !important;
             margin-right: auto !important;
             padding-top: 1.75rem !important;
-            padding-bottom: 5rem !important;
+            padding-bottom: 8rem !important;
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
+            overflow: visible !important;
         }
 
         /* Mobile & Tablet responsiveness */
@@ -32,6 +64,7 @@ def main():
                 padding-left: 0.85rem !important;
                 padding-right: 0.85rem !important;
                 padding-top: 1rem !important;
+                padding-bottom: 6rem !important;
             }
             .stTabs [data-baseweb="tab"] {
                 padding: 6px 10px !important;
@@ -51,8 +84,29 @@ def main():
             font-weight: 500;
         }
 
+        /* High-visibility modern custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px !important;
+            height: 10px !important;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 75, 75, 0.45) !important;
+            border-radius: 5px !important;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 75, 75, 0.85) !important;
+        }
+        * {
+            scrollbar-width: thin !important;
+            scrollbar-color: rgba(255, 75, 75, 0.5) rgba(255, 255, 255, 0.05) !important;
+        }
+
         /* Card border containers */
-        div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+        div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"],
+        div[data-testid="stVerticalBlockBorderWrapper"] {
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             margin-bottom: 1rem;
@@ -141,102 +195,101 @@ def main():
             data['summary'] = st.text_area(t["summary"], height=140, placeholder=t["summary_placeholder"], key="input_summary")
 
     with tab2:
-        with st.container(border=True):
-            st.header(t["edu_header"])
-            data['education'] = []
-            for i in range(st.session_state['edu_count']):
-                with st.container(border=True):
-                    st.subheader(f"{t['edu_title']} {i+1}")
-                    cols = st.columns(2)
-                    school = cols[0].text_input(f"{t['school']}", key=f"school_{i}")
-                    degree = cols[1].text_input(f"{t['degree']}", key=f"degree_{i}")
-                    dates = st.text_input(f"{t['dates']}", key=f"edu_dates_{i}")
-                    
-                    if school: 
-                        data['education'].append({'school': school, 'degree': degree, 'dates': dates})
-            
-            c_add, c_del = st.columns(2)
-            if c_add.button(t["add_edu"], icon=":material/add:", use_container_width=True):
-                st.session_state['edu_count'] += 1
-                st.rerun()
-            if c_del.button(t["del_edu"], icon=":material/remove:", disabled=st.session_state['edu_count'] <= 0, use_container_width=True):
-                st.session_state['edu_count'] -= 1
-                st.rerun()
+        st.header(t["edu_header"])
+        data['education'] = []
+        for i in range(st.session_state['edu_count']):
+            with st.container(border=True):
+                st.subheader(f"{t['edu_title']} {i+1}")
+                cols = st.columns(2)
+                school = cols[0].text_input(f"{t['school']}", key=f"school_{i}")
+                degree = cols[1].text_input(f"{t['degree']}", key=f"degree_{i}")
+                dates = st.text_input(f"{t['dates']}", key=f"edu_dates_{i}")
+                
+                if school or degree: 
+                    data['education'].append({'school': school, 'degree': degree, 'dates': dates})
+        
+        c_add, c_del = st.columns(2)
+        if c_add.button(t["add_edu"], icon=":material/add:", use_container_width=True):
+            st.session_state['edu_count'] += 1
+            st.rerun()
+        if c_del.button(t["del_edu"], icon=":material/remove:", disabled=st.session_state['edu_count'] <= 0, use_container_width=True):
+            st.session_state['edu_count'] -= 1
+            st.rerun()
 
     with tab3:
-        with st.container(border=True):
-            st.header(t["work_header"])
-            data['experience'] = []
-            for i in range(st.session_state['work_count']):
-                with st.container(border=True):
-                    st.subheader(f"{t['role']} {i+1}")
-                    c1 = st.columns(2)
-                    title = c1[0].text_input(f"{t['job_title']}", key=f"job_{i}")
-                    company = c1[1].text_input(f"{t['company']}", key=f"company_{i}")
-                    dates = st.text_input(f"{t['dates']}", key=f"job_dates_{i}")
-                    desc = st.text_area(f"{t['work_desc']}", height=120, key=f"job_desc_{i}")
-                    
-                    if title: 
-                        data['experience'].append({'title': title, 'company': company, 'dates': dates, 'description': desc})
-                    
-            c_add, c_del = st.columns(2)
-            if c_add.button(t["add_work"], icon=":material/add:", use_container_width=True):
-                st.session_state['work_count'] += 1
-                st.rerun()
-            if c_del.button(t["del_work"], icon=":material/remove:", disabled=st.session_state['work_count'] <= 0, use_container_width=True):
-                st.session_state['work_count'] -= 1
-                st.rerun()
+        st.header(t["work_header"])
+        data['experience'] = []
+        for i in range(st.session_state['work_count']):
+            with st.container(border=True):
+                st.subheader(f"{t['role']} {i+1}")
+                c1 = st.columns(2)
+                title = c1[0].text_input(f"{t['job_title']}", key=f"job_{i}")
+                company = c1[1].text_input(f"{t['company']}", key=f"company_{i}")
+                dates = st.text_input(f"{t['dates']}", key=f"job_dates_{i}")
+                desc = st.text_area(f"{t['work_desc']}", height=120, key=f"job_desc_{i}")
+                
+                if title: 
+                    data['experience'].append({'title': title, 'company': company, 'dates': dates, 'description': desc})
+                
+        c_add, c_del = st.columns(2)
+        if c_add.button(t["add_work"], icon=":material/add:", use_container_width=True):
+            st.session_state['work_count'] += 1
+            st.rerun()
+        if c_del.button(t["del_work"], icon=":material/remove:", disabled=st.session_state['work_count'] <= 0, use_container_width=True):
+            st.session_state['work_count'] -= 1
+            st.rerun()
 
     with tab4:
-        with st.container(border=True):
-            st.header(t["org_header"])
-            data['organizations'] = []
-            for i in range(st.session_state['org_count']):
-                with st.container(border=True):
-                    st.subheader(f"{t['org_item']} {i+1}")
-                    c1 = st.columns(2)
-                    title = c1[0].text_input(f"{t['org_role']}", key=f"org_role_{i}")
-                    company = c1[1].text_input(f"{t['org_name']}", key=f"org_name_{i}")
-                    dates = st.text_input(f"{t['dates']}", key=f"org_dates_{i}")
-                    desc = st.text_area(f"{t['org_desc']}", height=120, key=f"org_desc_{i}")
-                    
-                    if title: 
-                        data['organizations'].append({'title': title, 'company': company, 'dates': dates, 'description': desc})
-                    
-            c_add, c_del = st.columns(2)
-            if c_add.button(t["add_org"], icon=":material/add:", use_container_width=True):
-                st.session_state['org_count'] += 1
-                st.rerun()
-            if c_del.button(t["del_org"], icon=":material/remove:", disabled=st.session_state['org_count'] <= 0, use_container_width=True):
-                st.session_state['org_count'] -= 1
-                st.rerun()
+        st.header(t["org_header"])
+        data['organizations'] = []
+        for i in range(st.session_state['org_count']):
+            with st.container(border=True):
+                st.subheader(f"{t['org_item']} {i+1}")
+                c1 = st.columns(2)
+                title = c1[0].text_input(f"{t['org_role']}", key=f"org_role_{i}")
+                company = c1[1].text_input(f"{t['org_name']}", key=f"org_name_{i}")
+                dates = st.text_input(f"{t['dates']}", key=f"org_dates_{i}")
+                desc = st.text_area(f"{t['org_desc']}", height=120, key=f"org_desc_{i}")
+                
+                if title: 
+                    data['organizations'].append({'title': title, 'company': company, 'dates': dates, 'description': desc})
+                
+        c_add, c_del = st.columns(2)
+        if c_add.button(t["add_org"], icon=":material/add:", use_container_width=True):
+            st.session_state['org_count'] += 1
+            st.rerun()
+        if c_del.button(t["del_org"], icon=":material/remove:", disabled=st.session_state['org_count'] <= 0, use_container_width=True):
+            st.session_state['org_count'] -= 1
+            st.rerun()
 
     with tab5:
         with st.container(border=True):
             st.header(t["skills_header"])
             data['skills'] = st.text_area(t["skills_label"], height=100, placeholder=t["skills_placeholder"], key="input_skills")
+        
+        st.header(t["achievements_header"])
+        include_projects = st.checkbox(t.get("toggle_projects_section", "Sertakan bagian Prestasi & Proyek pada CV"), value=True, key="input_toggle_projects")
+        
+        data['projects'] = []
+        if include_projects:
+            for i in range(st.session_state['proj_count']):
+                with st.container(border=True):
+                    st.subheader(f"{t.get('item', t.get('achievement', 'Prestasi / Proyek'))} {i+1}")
+                    c_proj = st.columns([3, 1])
+                    name = c_proj[0].text_input(f"{t.get('item_name', t.get('achieve_name', 'Nama'))}", key=f"proj_name_{i}")
+                    dates = c_proj[1].text_input(f"{t['dates']}", key=f"proj_dates_{i}")
+                    desc = st.text_area(f"{t.get('item_desc', t.get('achieve_desc', 'Detail'))}", height=90, key=f"proj_desc_{i}")
+                    
+                    if name:
+                        data['projects'].append({'name': name, 'dates': dates, 'description': desc})
             
-            st.header(t["achievements_header"])
-            include_projects = st.checkbox(t.get("toggle_projects_section", "Sertakan bagian Prestasi & Proyek pada CV"), value=True, key="input_toggle_projects")
-            
-            data['projects'] = []
-            if include_projects:
-                for i in range(st.session_state['proj_count']):
-                    with st.container(border=True):
-                        st.subheader(f"{t.get('item', t.get('achievement', 'Prestasi / Proyek'))} {i+1}")
-                        name = st.text_input(f"{t.get('item_name', t.get('achieve_name', 'Nama'))}", key=f"proj_name_{i}")
-                        desc = st.text_area(f"{t.get('item_desc', t.get('achieve_desc', 'Detail'))}", height=90, key=f"proj_desc_{i}")
-                        
-                        if name:
-                            data['projects'].append({'name': name, 'description': desc})
-                
-                c_add, c_del = st.columns(2)
-                if c_add.button(t.get("add_proj", t.get("add_achieve", "Tambah Prestasi")), icon=":material/add:", use_container_width=True):
-                    st.session_state['proj_count'] += 1
-                    st.rerun()
-                if c_del.button(t.get("del_proj", t.get("del_achieve", "Hapus Prestasi")), icon=":material/remove:", disabled=st.session_state['proj_count'] <= 0, use_container_width=True):
-                    st.session_state['proj_count'] -= 1
-                    st.rerun()
+            c_add, c_del = st.columns(2)
+            if c_add.button(t.get("add_proj", t.get("add_achieve", "Tambah Prestasi")), icon=":material/add:", use_container_width=True):
+                st.session_state['proj_count'] += 1
+                st.rerun()
+            if c_del.button(t.get("del_proj", t.get("del_achieve", "Hapus Prestasi")), icon=":material/remove:", disabled=st.session_state['proj_count'] <= 0, use_container_width=True):
+                st.session_state['proj_count'] -= 1
+                st.rerun()
 
     with tab6:
         with st.container(border=True):

@@ -152,30 +152,45 @@ def generate_cv(data, font_choice="Times New Roman", lang="en", section_order=No
         if data.get('education'):
             add_section_header(headers["education"])
             for edu in data['education']:
+                school = edu.get('school', '')
+                degree = edu.get('degree', '')
+                header = school if school else degree
+                sub = degree if school else ''
+                
                 y = pdf.get_y()
                 pdf.set_font(main_font, '', 11)
                 pdf.cell(0, 6, clean_text(edu.get('dates', '')), align='R', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                 
                 pdf.set_y(y) 
                 pdf.set_font(main_font, 'B', 11)
-                pdf.cell(120, 6, clean_text(edu.get('school', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                pdf.cell(120, 6, clean_text(header), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-                pdf.set_font(main_font, '', 11)
-                pdf.cell(0, 6, clean_text(edu.get('degree', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                if sub:
+                    pdf.set_font(main_font, '', 11)
+                    pdf.cell(0, 6, clean_text(sub), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                 pdf.ln(2)
 
     def render_projects():
         if data.get('projects'):
             add_section_header(headers["projects"])
             for proj in data['projects']:
-                pdf.set_font(main_font, 'B', 11)
-                pdf.cell(0, 6, clean_text(proj.get('name', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                dates = proj.get('dates', '')
+                if dates:
+                    y = pdf.get_y()
+                    pdf.set_font(main_font, '', 11)
+                    pdf.cell(0, 6, clean_text(dates), align='R', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                    pdf.set_y(y)
+                    pdf.set_font(main_font, 'B', 11)
+                    pdf.cell(130, 6, clean_text(proj.get('name', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                else:
+                    pdf.set_font(main_font, 'B', 11)
+                    pdf.cell(0, 6, clean_text(proj.get('name', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
                 
                 pdf.set_font(main_font, '', 11)
                 desc = proj.get('description', proj.get('desc', ''))
                 if desc:
                     pdf.multi_cell(0, 5, clean_text(desc))
-                pdf.ln(6)
+                pdf.ln(3)
 
     dispatch = {
         "summary": render_summary,

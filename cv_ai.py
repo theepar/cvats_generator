@@ -670,7 +670,35 @@ DATE_PATTERN = re.compile(
     r"\b(?:19|20)\d{2}\b|\b(?:present|current|sekarang|hingga kini|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\b",
     re.I
 )
+INLINE_DATE_RE = re.compile(
+    r"(?:[ \t]{2,}|\s*\|\s*|\s*,\s*)(?:(?:expected|graduated|est\.?|sejak|lulus|periode|tahun)?\s*"
+    r"(?:(?:19|20)\d{2}|present|sekarang|current|hingga kini|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)"
+    r"[^\n]*)$",
+    re.I
+)
+DEGREE_KEYWORDS = re.compile(
+    r"\b(?:bachelor|master|doctor|phd|diploma|associate|sarjana|magister|doktor|s1|s2|s3|d3|d4|b\.?s\.?|b\.?a\.?|b\.?eng\.?|m\.?s\.?|m\.?a\.?|m\.?b\.?a\.?|rekayasa|teknik|engineering|computer science|informatika|sistem informasi)\b",
+    re.I
+)
+SCHOOL_KEYWORDS = re.compile(
+    r"\b(?:university|universitas|institute|institut|college|school|sekolah|politeknik|polytechnic|academy|akademi|smk|sma)\b",
+    re.I
+)
 EMAIL_PATTERN = re.compile(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}")
+
+def extract_inline_date(line):
+    m = INLINE_DATE_RE.search(line)
+    if m:
+        text = line[:m.start()].strip()
+        date = line[m.start():].strip().lstrip('|, \t')
+        return text, date
+    return line.strip(), None
+
+def is_entry_header(line):
+    s = line.strip()
+    if not s or s.startswith(("-", "*", "•")) or s.startswith(("[", "{", "(")):
+        return False
+    return bool(INLINE_DATE_RE.search(s))
 PHONE_PATTERN = re.compile(r"(?<!\w)(?:\+?62|0)[\d\s().-]{8,17}\d(?!\w)")
 LINK_PATTERN = re.compile(r"(?:https?://)?(?:www\.)?(?:linkedin\.com/in/|github\.com/)[^\s|,]+", re.I)
 
@@ -771,7 +799,8 @@ def split_blocks(lines):
     blocks = []
     block = []
     for line in lines + [""]:
-        if not line.strip():
+        s = line.strip()
+        if not s:
             if block:
                 blocks.append(block)
                 block = []
@@ -779,6 +808,12 @@ def split_blocks(lines):
         if line.lstrip().startswith("### ") and block:
             blocks.append(block)
             block = []
+        elif is_entry_header(line) and block:
+            has_bullet = any(l.strip().startswith(("-", "*", "•")) for l in block)
+            has_header = any(is_entry_header(l) for l in block)
+            if has_bullet or has_header:
+                blocks.append(block)
+                block = []
         block.append(line)
     return blocks
 
@@ -786,7 +821,7 @@ def split_blocks(lines):
 def parse_free_entry(block, section):
     if not block:
         return None
-    if "|" in block[0]:
+    if "|" in block[0] and not INLINE_DATE_RE.search(block[0]):
         return parse_entry(block, section)
     entry = {}
     details = []
@@ -796,33 +831,65 @@ def parse_free_entry(block, section):
         if field:
             entry[field] = value
         else:
-            details.append(strip_format(line))
+            cleaned = line.strip()
+            if cleaned:
+                details.append(cleaned)
     if not details:
         return entry if entry else None
+
     first = details.pop(0)
+    clean_first, inline_date = extract_inline_date(first)
+    if inline_date and not entry.get("dates"):
+        entry["dates"] = inline_date
+
+    clean_first = strip_format(clean_first)
+
     if section == "projects":
-        entry.setdefault("name", first)
+        entry.setdefault("name", clean_first)
     elif section == "education":
-        entry.setdefault("school", first)
-        if details and not DATE_PATTERN.search(details[0]):
-            entry.setdefault("degree", details.pop(0))
+        is_deg = bool(DEGREE_KEYWORDS.search(clean_first))
+        is_sch = bool(SCHOOL_KEYWORDS.search(clean_first))
+
+        if is_deg and not is_sch:
+            entry.setdefault("degree", clean_first)
+            if details and not details[0].startswith(("-", "*", "•")) and not DATE_PATTERN.search(details[0]):
+                entry.setdefault("school", strip_format(details.pop(0)))
+            else:
+                entry.setdefault("school", "")
+        else:
+            entry.setdefault("school", clean_first)
+            if details and not details[0].startswith(("-", "*", "•")) and not DATE_PATTERN.search(details[0]):
+                entry.setdefault("degree", strip_format(details.pop(0)))
     else:
-        match = re.split(r"\s+(?:at|@|di)\s+", first, maxsplit=1, flags=re.I)
+        match = re.split(r"\s+(?:at|@|di)\s+", clean_first, maxsplit=1, flags=re.I)
         entry.setdefault("title", match[0])
         if len(match) > 1:
             entry.setdefault("company", match[1])
-        elif details and not details[0].startswith("-") and len(details[0]) < 65 and not DATE_PATTERN.search(details[0]):
-            entry.setdefault("company", details.pop(0))
+        elif details and not details[0].startswith(("-", "*", "•")):
+            next_line = details[0]
+            if "|" in next_line:
+                comp, rest = next_line.split("|", 1)
+                entry.setdefault("company", strip_format(comp))
+                details[0] = strip_format(rest)
+            elif not DATE_PATTERN.search(next_line):
+                entry.setdefault("company", strip_format(details.pop(0)))
+
     remaining = []
     for line in details:
-        if DATE_PATTERN.search(line) and len(line) < 55 and not entry.get("dates"):
-            entry["dates"] = line
+        s_line = strip_format(line)
+        if DATE_PATTERN.search(s_line) and len(s_line) < 55 and not entry.get("dates") and not s_line.startswith(("-", "*", "•")):
+            entry["dates"] = s_line
         else:
             remaining.append(line)
     if remaining:
         entry["description"] = "\n".join(remaining)
-    required = "school" if section == "education" else "name" if section == "projects" else "title"
-    return entry if entry.get(required) else None
+    if section == "education":
+        is_valid = bool(entry.get("school") or entry.get("degree"))
+    elif section == "projects":
+        is_valid = bool(entry.get("name"))
+    else:
+        is_valid = bool(entry.get("title"))
+    return entry if is_valid else None
 
 
 def parse_free_text(text):
@@ -848,8 +915,9 @@ def parse_free_text(text):
                 continue
         heading = detect_heading(line, models)
         if heading and not line.startswith("### "):
-            current = heading
-            continue
+            if heading != current:
+                current = heading
+                continue
         if current is None:
             predicted, confidence = classify(strip_format(line), models["content"])
             current = predicted if confidence >= 0.30 else "summary"
