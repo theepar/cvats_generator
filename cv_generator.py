@@ -1,5 +1,6 @@
 import html
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 from translations import CV_SECTION_HEADERS
 
 class PDF(FPDF):
@@ -11,7 +12,8 @@ class PDF(FPDF):
         self.set_font('Times', '', 10)
 
 def clean_text(text):
-    if not text: return ""
+    if not text:
+        return ""
     replacements = {
         '\u2022': '-',
         '\u2013': '-',
@@ -21,13 +23,16 @@ def clean_text(text):
         '\u201c': '"',
         '\u201d': '"',
         '\u2026': '...',
+        '\u00a0': ' ',
     }
     for char, replacement in replacements.items():
         text = text.replace(char, replacement)
     
     return text.encode('latin-1', 'replace').decode('latin-1')
 
-def generate_cv(data, font_choice="Times New Roman", lang="en"):
+DEFAULT_SECTIONS = ["summary", "skills", "experience", "organizations", "education", "projects"]
+
+def generate_cv(data, font_choice="Times New Roman", lang="en", section_order=None):
     pdf = PDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -40,18 +45,21 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
     main_font = font_map.get(font_choice, "Times")
     headers = CV_SECTION_HEADERS.get(lang, CV_SECTION_HEADERS["en"])
     
+    # 1. Header (Name)
     pdf.set_font(main_font, 'B', 24)
-    pdf.cell(0, 10, clean_text(data.get('name', 'Name')).upper(), 0, 1, 'C')
+    name = clean_text(data.get('name', 'Name')).upper()
+    pdf.cell(0, 10, name, align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     
     pdf.set_font(main_font, '', 11)
     
     def prep_url(url):
         if not url: return ""
         url = clean_text(url)
-        if not url.startswith('http'):
+        if not url.startswith(('http://', 'https://')):
             return f'https://{url}'
         return url
 
+    # 2. Contact details
     parts = []
     if data.get('location'): parts.append(html.escape(clean_text(data['location'])))
     if data.get('phone'): parts.append(html.escape(clean_text(data['phone'])))
@@ -64,6 +72,7 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
         html_contact = " | ".join(parts)
         pdf.write_html(f'<p align="center" style="font-family:{main_font}; font-size:11pt">{html_contact}</p>')
     
+    # 3. Links (LinkedIn, GitHub/Portfolio)
     links = []
     if data.get('linkedin'): 
         lbl = clean_text(data['linkedin'])
@@ -83,44 +92,31 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
     def add_section_header(title):
         pdf.ln(2)
         pdf.set_font(main_font, 'B', 12)
-        pdf.cell(0, 6, title.upper(), 0, 1, 'L')
+        pdf.cell(0, 6, title.upper(), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(2)
-
-    if data.get('summary'):
-        add_section_header(headers["summary"])
-        pdf.set_font(main_font, '', 11)
-        pdf.multi_cell(0, 5, clean_text(data['summary']))
-
-    if data.get('skills'):
-        add_section_header(headers["skills"])
-        pdf.set_font(main_font, '', 11)
-        skills_text = clean_text(data['skills'])
-        pdf.multi_cell(0, 5, skills_text)
 
     def render_block(entries):
         for item in entries:
             pdf.set_font(main_font, 'B', 11)
             title = clean_text(item.get('title', item.get('name', '')))
-            
-            pdf.cell(100, 6, title, 0, 0, 'L')
+            pdf.cell(100, 6, title, align='L', new_x=XPos.RIGHT, new_y=YPos.TOP)
             
             pdf.set_font(main_font, '', 11)
-            pdf.cell(0, 6, clean_text(item.get('dates', '')), 0, 1, 'R')
+            pdf.cell(0, 6, clean_text(item.get('dates', '')), align='R', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
             
             comp = clean_text(item.get('company', ''))
             pdf.set_font(main_font, 'I', 11)
-            pdf.cell(0, 6, comp, 0, 1, 'L')
+            pdf.cell(0, 6, comp, align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
             
             pdf.set_font(main_font, '', 11)
             desc = item.get('description', item.get('desc', ''))
             if desc:
-                lines = desc.split('\n')
-                for line in lines:
+                for line in desc.splitlines():
                     line = line.strip()
                     if not line: continue
                     line = clean_text(line)
-                    if not line.startswith('-') and not line.startswith('•'):
+                    if not line.startswith(('-', '•', '*')):
                         line = '- ' + line
                     
                     current_x = pdf.get_x()
@@ -129,41 +125,70 @@ def generate_cv(data, font_choice="Times New Roman", lang="en"):
                     pdf.set_x(current_x)
             pdf.ln(3)
 
-    if data.get('experience'):
-        add_section_header(headers["experience"])
-        render_block(data['experience'])
-
-    # --- Organizations ---
-    if data.get('organizations'):
-        add_section_header(headers["organizations"])
-        render_block(data['organizations'])
-
-    if data.get('education'):
-        add_section_header(headers["education"])
-        for edu in data['education']:
-            y = pdf.get_y()
+    # Section render map
+    def render_summary():
+        if data.get('summary'):
+            add_section_header(headers["summary"])
             pdf.set_font(main_font, '', 11)
-            pdf.cell(0, 6, clean_text(edu.get('dates', '')), 0, 1, 'R')
-            
-            pdf.set_y(y) 
-            pdf.set_font(main_font, 'B', 11)
-            pdf.cell(120, 6, clean_text(edu.get('school', '')), 0, 0, 'L')
-            pdf.ln(6)
+            pdf.multi_cell(0, 5, clean_text(data['summary']))
 
+    def render_skills():
+        if data.get('skills'):
+            add_section_header(headers["skills"])
             pdf.set_font(main_font, '', 11)
-            pdf.cell(0, 6, clean_text(edu.get('degree', '')), 0, 1, 'L')
-            pdf.ln(2)
-    
-    if data.get('projects'):
-        add_section_header(headers["projects"])
-        for proj in data['projects']:
-            pdf.set_font(main_font, 'B', 11)
-            pdf.cell(0, 6, clean_text(proj['name']), 0, 1, 'L') 
-            
-            pdf.set_font(main_font, '', 11)
-            desc = proj.get('description', proj.get('desc', ''))
-            if desc:
-                pdf.multi_cell(0, 5, clean_text(desc))
-            pdf.ln(6)
+            pdf.multi_cell(0, 5, clean_text(data['skills']))
 
-    return bytes(pdf.output(dest='S'))
+    def render_experience():
+        if data.get('experience'):
+            add_section_header(headers["experience"])
+            render_block(data['experience'])
+
+    def render_organizations():
+        if data.get('organizations'):
+            add_section_header(headers["organizations"])
+            render_block(data['organizations'])
+
+    def render_education():
+        if data.get('education'):
+            add_section_header(headers["education"])
+            for edu in data['education']:
+                y = pdf.get_y()
+                pdf.set_font(main_font, '', 11)
+                pdf.cell(0, 6, clean_text(edu.get('dates', '')), align='R', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                
+                pdf.set_y(y) 
+                pdf.set_font(main_font, 'B', 11)
+                pdf.cell(120, 6, clean_text(edu.get('school', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+                pdf.set_font(main_font, '', 11)
+                pdf.cell(0, 6, clean_text(edu.get('degree', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                pdf.ln(2)
+
+    def render_projects():
+        if data.get('projects'):
+            add_section_header(headers["projects"])
+            for proj in data['projects']:
+                pdf.set_font(main_font, 'B', 11)
+                pdf.cell(0, 6, clean_text(proj.get('name', '')), align='L', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                
+                pdf.set_font(main_font, '', 11)
+                desc = proj.get('description', proj.get('desc', ''))
+                if desc:
+                    pdf.multi_cell(0, 5, clean_text(desc))
+                pdf.ln(6)
+
+    dispatch = {
+        "summary": render_summary,
+        "skills": render_skills,
+        "experience": render_experience,
+        "organizations": render_organizations,
+        "education": render_education,
+        "projects": render_projects,
+    }
+
+    sections_to_render = section_order or DEFAULT_SECTIONS
+    for sec in sections_to_render:
+        if sec in dispatch:
+            dispatch[sec]()
+
+    return bytes(pdf.output())

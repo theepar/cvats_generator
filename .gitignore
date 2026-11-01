@@ -2,3 +2,5 @@ app_personal.py
 __pycache__/
 *.pyc
 .vscode/
+cv_model.joblib
+.snapgent/
