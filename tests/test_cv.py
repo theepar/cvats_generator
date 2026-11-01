@@ -217,3 +217,120 @@ def test_single_line_education_parsing():
     assert edu["dates"] == "Expected 2027"
 
 
+
+LAYOUT_CV = """
+                                          Budi Santoso
+                                                       Frontend & Mobile Developer
+                                        Bali, Indonesia  |  +62 851-7983-7007  |  budi.santoso@mail.test
+                                            linkedin.com/in/budisantoso  |  budisantoso.site
+
+PROFESSIONAL SUMMARY
+
+Frontend & Mobile Developer dengan fondasi JavaScript yang kuat dan pengalaman membangun aplikasi mobile
+lintas platform menggunakan Flutter.
+
+TECHNICAL SKILLS
+
+Languages: JavaScript, Dart
+
+MOBILE DEVELOPMENT EXPERIENCE
+
+Mobile Developer - Hackathon Project                                                                 2025
+Agrarian (AgriPlay)   |   React Native, Expo
+ •   Membangun aplikasi mobile secara mandiri menggunakan React Native dan Expo untuk
+     kompetisi hackathon bersama tim.
+Full Stack Developer (Freelance)                                                   May 2025 - Present
+Global Gateway   |   Flutter, Laravel
+ •   Merancang aplikasi mobile berbasis Flutter.
+
+WEB & FRONTEND DEVELOPMENT EXPERIENCE
+
+Full Stack Developer (Freelance)                                                   Jan 2026 - Feb 2026
+Mihari Novel   |   Next.js, Gemini API
+ •   Merancang dan membangun platform novel digital.
+
+ •   Mengembangkan fitur engagement pengguna.
+Front End Developer Intern Jun 2023 - Sep 2023
+PT. Ganeshcom Studio   |   Laravel, Bootstrap
+
+EDUCATION
+
+Bachelor of Software Engineering (S1)                                                Expected 2027
+Telkom University
+Vocational High School - Software Engineering (RPL)                                Graduated Dec 2023
+SMK Negeri 1 Denpasar
+"""
+
+
+def test_layout_pdf_cv_has_no_review_flags():
+    parsed = parse_free_text(LAYOUT_CV)
+    check = validate_cv(parsed)
+    assert check.review == []
+
+    assert parsed["location"] == "Bali, Indonesia"
+    assert parsed["github"] == "budisantoso.site"
+    assert "\n" not in parsed["summary"]
+    assert parsed["summary"].startswith("Frontend & Mobile Developer dengan")
+
+    titles = [e["title"] for e in parsed["experience"]]
+    assert titles == [
+        "Mobile Developer - Hackathon Project",
+        "Full Stack Developer (Freelance)",
+        "Full Stack Developer (Freelance)",
+        "Front End Developer Intern",
+    ]
+    assert [e["company"] for e in parsed["experience"]] == ["Agrarian (AgriPlay)", "Global Gateway", "Mihari Novel", "PT. Ganeshcom Studio"]
+    assert parsed["experience"][3]["dates"] == "Jun 2023 - Sep 2023"
+    assert "kompetisi hackathon bersama tim" in parsed["experience"][0]["description"]
+    assert "engagement pengguna" in parsed["experience"][2]["description"]
+
+    school = parsed["education"][1]
+    assert school["school"] == "SMK Negeri 1 Denpasar"
+    assert school["degree"] == "Vocational High School - Software Engineering (RPL)"
+
+
+def test_pipe_separated_header_lines():
+    raw_text = """
+    Dewi Lestari
+    dewi@example.com | 081234567890
+
+    Work Experience
+    Full Stack Engineer | Atheric AI | Apr 2026 - Present
+    - Built a stock analysis platform.
+    Web Developer | Indonesian Red Cross (PMI) | Apr 2025 - Aug 2025
+    - Built a finance system.
+
+    Education
+    Telkom University | Bachelor of Software Engineering (S1) | Expected Graduation: 2027
+    SMK Negeri 1 Denpasar | Software Engineering | Graduated: Dec 2023
+    """
+    parsed = parse_free_text(raw_text)
+    assert [(e["title"], e["company"], e["dates"]) for e in parsed["experience"]] == [
+        ("Full Stack Engineer", "Atheric AI", "Apr 2026 - Present"),
+        ("Web Developer", "Indonesian Red Cross (PMI)", "Apr 2025 - Aug 2025"),
+    ]
+    assert [(e["school"], e["degree"], e["dates"]) for e in parsed["education"]] == [
+        ("Telkom University", "Bachelor of Software Engineering (S1)", "Expected Graduation: 2027"),
+        ("SMK Negeri 1 Denpasar", "Software Engineering", "Graduated: Dec 2023"),
+    ]
+
+
+def test_single_space_dates_and_education_with_dates_on_degree_line():
+    raw_text = """
+    Dewi Lestari
+    dewi@example.com
+
+    Pengalaman Kerja
+    Frontend Developer Jun 2025 - Present
+    PT Inovasi Digital
+    - Membangun fitur aplikasi.
+
+    Pendidikan
+    Universitas Padjadjaran
+    S1 Informatika | 2018 - 2022
+    """
+    parsed = parse_free_text(raw_text)
+    job = parsed["experience"][0]
+    assert (job["title"], job["company"], job["dates"]) == ("Frontend Developer", "PT Inovasi Digital", "Jun 2025 - Present")
+    edu = parsed["education"][0]
+    assert (edu["school"], edu["degree"], edu["dates"]) == ("Universitas Padjadjaran", "S1 Informatika", "2018 - 2022")
