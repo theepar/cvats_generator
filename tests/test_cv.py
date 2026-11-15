@@ -334,3 +334,41 @@ def test_single_space_dates_and_education_with_dates_on_degree_line():
     assert (job["title"], job["company"], job["dates"]) == ("Frontend Developer", "PT Inovasi Digital", "Jun 2025 - Present")
     edu = parsed["education"][0]
     assert (edu["school"], edu["degree"], edu["dates"]) == ("Universitas Padjadjaran", "S1 Informatika", "2018 - 2022")
+
+
+def test_wrapped_summary_last_line_is_kept():
+    raw_text = """
+    Dewi Lestari
+    dewi@example.com
+
+    PROFESSIONAL SUMMARY
+    Developer dengan pengalaman membangun produk digital dari tahap
+    desain hingga deployment.
+
+    EDUCATION
+    Universitas Padjadjaran
+    """
+    parsed = parse_free_text(raw_text)
+    assert parsed["summary"].endswith("desain hingga deployment.")
+
+
+def test_generated_pdf_follows_ats_template_layout():
+    from io import BytesIO
+    from pypdf import PdfReader
+
+    data = get_sample_cv_data()
+    reader = PdfReader(BytesIO(generate_cv(data, font_choice="Times New Roman", lang="id")))
+    assert len(reader.pages) == 1
+    lines = [line.strip() for line in reader.pages[0].extract_text().splitlines() if line.strip()]
+
+    assert lines[0] == data["name"].upper()
+    assert any(data["email"] in line and data["phone"] in line for line in lines)
+    for heading in ("Ringkasan Profil", "Keahlian Utama", "Pengalaman Kerja", "Pendidikan"):
+        assert heading in lines
+    # company and date share a line, role sits below it
+    company_row = next(line for line in lines if line.startswith("PT Solusi Teknologi Nusantara"))
+    assert company_row.endswith("Januari 2024 – Sekarang")
+    assert lines[lines.index(company_row) + 1] == "Software Engineer"
+    # bullets are real bullet glyphs, skills keep their labels
+    assert any(line.startswith("• Merancang dan membangun arsitektur") for line in lines)
+    assert any(line.startswith("Bahasa Pemrograman: JavaScript") for line in lines)

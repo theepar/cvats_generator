@@ -762,6 +762,8 @@ def detect_heading(line, models):
         return None
     if line.lstrip().startswith(("-", "*", "+")) or len(value.split()) > 6:
         return None
+    if value[0].islower() or value.endswith((".", ",")):
+        return None
     section, score = classify(value, models["headings"])
     return section if score >= 0.55 else None
 
